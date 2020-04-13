@@ -1,0 +1,32 @@
+#!/usr/bin/env python3
+
+import os
+import sys
+import json
+
+from startup import startup_check, make_game
+from gameparse import parse_game_arg
+
+from items import Portfolio
+
+MARKETCL_PATH = os.path.expandvars("$HOME/.marketcl")
+
+def main(args):
+    if args[1] == "game":
+        if len(args) >= 3:
+            parse_game_arg(args[2], MARKETCL_PATH)
+        else:
+            print("Game argument needs another option!")
+
+    port = Portfolio(MARKETCL_PATH)
+
+    if args[1] in ["buy", "b"]:
+        port.buy()
+    elif args[1] in ["sell", "s"]:
+        port.sell()
+    elif args[1] in ["list", "ls", "l"]:
+        port.print()
+
+if __name__ == "__main__":
+    startup_check(MARKETCL_PATH)
+    main(sys.argv)
