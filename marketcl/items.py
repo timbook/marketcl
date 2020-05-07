@@ -36,6 +36,8 @@ class Portfolio:
         with open(self.game_file, 'r') as f:
             self.data = json.load(f)        
 
+        self.portfolio = [Holding(**holding) for holding in self.data["portfolio"]]
+
         self.create_df()
 
     def buy(self):
@@ -67,11 +69,16 @@ class Portfolio:
             sys.exit(0)
 
     def add_holding(self, sym, n_buy, price):
-        holding = Holding(sym, n_buy, price)
+        # New item to buy
+        new_holding = Holding(sym, n_buy, price)
+
+        # Adjust cash holdings and total fees paid
         self.data["cash"] -= n_buy*price
         self.data["cash"] -= self.data["trade_fee"]
         self.data["total_fee"] += self.data["trade_fee"]
-        self.data["portfolio"].append(holding.to_dict())
+
+        # Add to portfolio
+        self.portfolio.append(new_holding)
 
     def sell(self):
         # List holdings
@@ -82,8 +89,7 @@ class Portfolio:
         row = self.df.loc[sell_id, :]
 
         # Prompt for asset
-        print()
-        print("You have {} shares of {}".format(row.n, row.sym))
+        print("\nYou have {} shares of {}".format(row.n, row.sym))
         n_sell = int(input("How many would you like to sell? "))
 
         # Check if possible
@@ -92,8 +98,7 @@ class Portfolio:
             sys.exit(1)
 
         # Buffer user
-        print()
-        print("You're about to sell {} shares of {}.".format(n_sell, row.sym))
+        print("\nYou're about to sell {} shares of {}.".format(n_sell, row.sym))
         ans = input("Are you sure? (Y/n) ")
 
         # Sell holding and write
@@ -157,6 +162,7 @@ class Portfolio:
         print()
 
     def write(self):
+        self.data["portfolio"] = [holding.to_dict() for holding in self.portfolio]
         with open(self.game_file, 'w') as f:
             json.dump(self.data, f)
 
