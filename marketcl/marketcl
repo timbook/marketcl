@@ -18,14 +18,14 @@ def main(args):
         else:
             print("Game argument needs another option!")
 
-    port = Game(MARKETCL_PATH)
+    game = Game(MARKETCL_PATH)
 
     if args[1] in ["buy", "b"]:
-        port.buy()
+        game.buy()
     elif args[1] in ["sell", "s"]:
-        port.sell()
+        game.sell()
     elif args[1] in ["list", "ls", "l"]:
-        port.print()
+        game.print()
 
 if __name__ == "__main__":
     startup_check(MARKETCL_PATH)

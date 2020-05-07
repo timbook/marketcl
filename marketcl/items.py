@@ -33,19 +33,19 @@ class Game:
             self.game_file = os.path.join(mcl_path, f"game-{name}.json")
 
         with open(self.game_file, 'r') as f:
-            self.data = json.load(f)        
+            game_data_json = json.load(f)
+            self.data = GameData(game_data_json)
 
-        self.portfolio = Portfolio(self.data["portfolio"])
+        self.portfolio = Portfolio(game_data_json["portfolio"])
         self.create_df()
 
     def buy(self):
         sym = input("Enter a ticker to buy: ").lower()
         price = get_one_price(sym)
-        cash = self.data["cash"]
-        can_buy = int(cash // price)
+        can_buy = int(self.data.cash // price)
 
         print("{} costs ${:,.2f} per share.".format(sym.upper(), price))
-        print("You currently have ${:,.2f}".format(cash))
+        print("You currently have ${:,.2f}".format(self.data.cash))
         print("You can buy up to {} shares.".format(can_buy))
 
         n_buy = int(input("How many would you like to buy? "))
@@ -56,7 +56,7 @@ class Game:
         print("You're about to buy {} shares of {} for ${:,.2f} each.".format(
             n_buy, sym.upper(), price
         ))
-        print("You'll have ${:,.2f} remaining.".format(cash - n_buy*price))
+        print("You'll have ${:,.2f} remaining.".format(self.data.cash - n_buy*price))
 
         ans = input("Are you sure? (Y/n) ")
         if ans == "Y":
@@ -71,9 +71,9 @@ class Game:
         new_holding = Holding(sym, n_buy, price)
 
         # Adjust cash holdings and total fees paid
-        self.data["cash"] -= n_buy*price
-        self.data["cash"] -= self.data["trade_fee"]
-        self.data["total_fee"] += self.data["trade_fee"]
+
+        self.data.rm_cash(n_buy*price)
+        self.data.pay_fee()
 
         # Add to portfolio
         self.portfolio.append(new_holding)
@@ -122,17 +122,14 @@ class Game:
         # cash holdings in portfolio
         cash_freed = row.price*n_sell
         cap_gain = n_sell*(row.price - row.bought_at)
-        cap_gain_paid = cap_gain*self.data["cap_gains_tax"]
+        cap_gain_paid = cap_gain*self.data.cap_gains_tax
 
-        self.data["cash"] += cash_freed
-        self.data["cash"] -= cap_gain_paid
-        self.data["cash"] -= self.data["trade_fee"]
-
-        self.data["total_tax"] += cap_gain_paid
-        self.data["total_fee"] += self.data["trade_fee"]
+        self.data.add_cash(cash_freed)
+        self.data.pay_tax(n_sell*(row.price - row.bought_at))
+        self.data.pay_fee()
 
     def create_df(self):
-        self.df = pd.DataFrame(self.data["portfolio"])
+        self.df = pd.DataFrame(self.portfolio.to_json())
         self.df.index.name = "ID"
 
     def print(self):
@@ -144,21 +141,67 @@ class Game:
         self.df["net_profit"] = self.df.n*(self.df.price - self.df.bought_at)
         print(self.df)
 
-        total_assets = self.data["cash"] + self.df.total_holding.sum()
-        total_profit = total_assets - self.data["init_cash"]
+        # TODO: Pull this from self.data
+        total_assets = self.data.cash + self.df.total_holding.sum()
+        total_profit = total_assets - self.data.init_cash
+
         print()
-        print("CASH REMAINING: ${:,.2f}".format(self.data["cash"]))
-        print("TOTAL FEES PAID: ${:,.2f}".format(self.data["total_fee"]))
-        print("TOTAL TAX PAID: ${:,.2f}".format(self.data["total_tax"]))
+        print("CASH REMAINING: ${:,.2f}".format(self.data.cash))
+        print("TOTAL FEES PAID: ${:,.2f}".format(self.data.total_fee))
+        print("TOTAL TAX PAID: ${:,.2f}".format(self.data.total_tax))
 
         print("TOTAL ASSETS: ${:,.2f}".format(total_assets))
         print("TOTAL PROFIT: ${:,.2f}".format(total_profit))
         print()
 
     def write(self):
-        self.data["portfolio"] = self.portfolio.to_json()
+        data_dump = {
+            **self.data.to_dict(), 
+            "portfolio": self.portfolio.to_json()
+        }
+
         with open(self.game_file, 'w') as f:
-            json.dump(self.data, f)
+            json.dump(data_dump, f)
+
+class GameData:
+    def __init__(self, raw_data):
+        self.init_cash = raw_data["init_cash"]
+        self.cash = raw_data["cash"]
+        self.cap_gains_tax = raw_data["cap_gains_tax"]
+        self.trade_fee = raw_data["trade_fee"]
+        self.total_tax = raw_data["total_tax"]
+        self.total_fee = raw_data["total_fee"]
+
+    def rm_cash(self, amount):
+        self.cash -= amount
+
+    def add_cash(self, amount):
+        self.cash += amount
+
+    def pay_fee(self):
+        self.cash -= self.trade_fee
+        self.total_fee += self.trade_fee
+
+    def pay_tax(self, amount):
+        tax_amount = self.cap_gains_tax * amount
+        self.cash -= tax_amount
+        self.total_tax += tax_amount
+
+    def total_assets(self):
+        pass
+
+    def total_profit(self):
+        pass
+
+    def to_dict(self):
+        return {
+            "init_cash": self.init_cash,
+            "cash": self.cash,
+            "cap_gains_tax": self.cap_gains_tax,
+            "trade_fee": self.trade_fee,
+            "total_tax": self.total_tax,
+            "total_fee": self.total_fee
+        }
 
 class Portfolio:
     def __init__(self, raw_data):
