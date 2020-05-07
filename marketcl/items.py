@@ -141,7 +141,6 @@ class Game:
         self.df["net_profit"] = self.df.n*(self.df.price - self.df.bought_at)
         print(self.df)
 
-        # TODO: Pull this from self.data
         total_assets = self.data.cash + self.df.total_holding.sum()
         total_profit = total_assets - self.data.init_cash
 
@@ -186,12 +185,6 @@ class GameData:
         tax_amount = self.cap_gains_tax * amount
         self.cash -= tax_amount
         self.total_tax += tax_amount
-
-    def total_assets(self):
-        pass
-
-    def total_profit(self):
-        pass
 
     def to_dict(self):
         return {
