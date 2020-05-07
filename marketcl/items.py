@@ -24,8 +24,7 @@ def get_many_prices(syms):
 
     return {sym.upper() : df.Close[sym.upper()].dropna()[-1] for sym in syms.split()}
 
-
-class Portfolio:
+class Game:
     def __init__(self, mcl_path):
 
         config = os.path.join(mcl_path, "config.json")
@@ -36,8 +35,7 @@ class Portfolio:
         with open(self.game_file, 'r') as f:
             self.data = json.load(f)        
 
-        self.portfolio = [Holding(**holding) for holding in self.data["portfolio"]]
-
+        self.portfolio = Portfolio(self.data["portfolio"])
         self.create_df()
 
     def buy(self):
@@ -158,9 +156,25 @@ class Portfolio:
         print()
 
     def write(self):
-        self.data["portfolio"] = [holding.to_dict() for holding in self.portfolio]
+        self.data["portfolio"] = self.portfolio.to_json()
         with open(self.game_file, 'w') as f:
             json.dump(self.data, f)
+
+class Portfolio:
+    def __init__(self, raw_data):
+        self.items = [Holding(**holding) for holding in raw_data]
+
+    def __getitem__(self, i):
+        return self.items[i]
+
+    def pop(self, ix):
+        self.items.pop(ix)
+
+    def append(self, holding):
+        self.items.append(holding)
+
+    def to_json(self):
+        return [item.to_dict() for item in self.items]
 
 class Holding:
     def __init__(self, sym, n, bought_at):
