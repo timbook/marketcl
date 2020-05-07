@@ -109,17 +109,16 @@ class Portfolio:
             print("Close call! Exiting...")
             sys.exit(0)
 
-        self.print()
-
     def rm_holding(self, ix, n_sell):
         # Row to sell
         row = self.df.loc[ix, :]
 
-        n_remaining = self.data["portfolio"][ix]["n"] - n_sell
+        # Ensure user doesn't sell more than they own
+        n_remaining = row.n - n_sell
         if n_remaining == 0:
-            self.data["portfolio"].pop(ix)
+            self.portfolio.pop(ix)
         else:
-            self.data["portfolio"][ix]["n"] -= n_sell
+            self.portfolio[ix].sell(n_sell)
 
         # Compute cash liquidated, taxes, and capital gains paid, adjust
         # cash holdings in portfolio
@@ -133,9 +132,6 @@ class Portfolio:
 
         self.data["total_tax"] += cap_gain_paid
         self.data["total_fee"] += self.data["trade_fee"]
-
-        # Recreate dataframe with sold asset removed
-        self.create_df()
 
     def create_df(self):
         self.df = pd.DataFrame(self.data["portfolio"])
@@ -178,3 +174,6 @@ class Holding:
             "n": self.n,
             "bought_at": self.bought_at
         }
+
+    def sell(self, n):
+        self.n -= n
