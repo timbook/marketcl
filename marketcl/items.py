@@ -139,7 +139,9 @@ class Game:
         self.df["total_holding"] = self.df.n*self.df.price
         self.df["pct_profit"] = round((self.df.price - self.df.bought_at) / self.df.bought_at, 3)
         self.df["net_profit"] = self.df.n*(self.df.price - self.df.bought_at)
-        print(self.df)
+
+        # TODO
+        self.portfolio.print_table(prices)
 
         total_assets = self.data.cash + self.df.total_holding.sum()
         total_profit = total_assets - self.data.init_cash
@@ -208,6 +210,50 @@ class Portfolio:
 
     def append(self, holding):
         self.items.append(holding)
+
+    def print_table(self, price_map):
+        # Headers
+        print(''.join([
+            "ID".rjust(3, ' '),
+            "Symbol".rjust(8, ' '),
+            "N".rjust(6, ' '),
+            "Bought At".rjust(12, ' '),
+            "Price".rjust(12, ' '),
+            "Tot. Value".rjust(14, ' '),
+            "% Profit".rjust(10, ' '),
+            "Net Profit".rjust(12, ' ')
+        ]))
+        print("="*80)
+
+        for ix, holding in enumerate(self.items):
+            price = price_map[holding.sym]
+
+            print(''.join([
+                # ID column
+                str(ix).rjust(3, ' '),
+
+                # Symbol column
+                holding.sym.upper().rjust(8, ' '),
+
+                # Stock counts
+                str(holding.n).rjust(6, ' '),
+
+                # Bought at
+                "${:,.2f}".format(holding.bought_at).rjust(12, ' '),
+
+                # Current price
+                "${:,.2f}".format(price).rjust(12, ' '),
+
+                # Total value
+                "${:,.2f}".format(holding.n * price).rjust(14, ' '),
+
+                # Percentage profit
+                "{:,.3f}%".format((price - holding.bought_at)*holding.n/holding.bought_at).rjust(10, ' '),
+
+                # Net profit
+                "${:,.2f}".format((price - holding.bought_at)*holding.n).rjust(12, ' '),
+            ]))
+
 
     def to_json(self):
         return [item.to_dict() for item in self.items]
