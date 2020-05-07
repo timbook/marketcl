@@ -107,16 +107,20 @@ class Portfolio:
         self.print()
 
     def rm_holding(self, ix, n_sell):
+        # Row to sell
         row = self.df.loc[ix, :]
-        cash_freed = row.price*n_sell
-        cap_gain = n_sell*(row.price - row.bought_at)
-        cap_gain_paid = cap_gain*self.data["cap_gains_tax"]
 
         n_remaining = self.data["portfolio"][ix]["n"] - n_sell
         if n_remaining == 0:
             self.data["portfolio"].pop(ix)
         else:
             self.data["portfolio"][ix]["n"] -= n_sell
+
+        # Compute cash liquidated, taxes, and capital gains paid, adjust
+        # cash holdings in portfolio
+        cash_freed = row.price*n_sell
+        cap_gain = n_sell*(row.price - row.bought_at)
+        cap_gain_paid = cap_gain*self.data["cap_gains_tax"]
 
         self.data["cash"] += cash_freed
         self.data["cash"] -= cap_gain_paid
@@ -125,6 +129,7 @@ class Portfolio:
         self.data["total_tax"] += cap_gain_paid
         self.data["total_fee"] += self.data["trade_fee"]
 
+        # Recreate dataframe with sold asset removed
         self.create_df()
 
     def create_df(self):
