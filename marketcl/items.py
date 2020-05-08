@@ -213,6 +213,7 @@ class Portfolio:
 
     def print_table(self, price_map):
         # Headers
+        print()
         print(''.join([
             "ID".rjust(3, ' '),
             "Symbol".rjust(8, ' '),
@@ -223,37 +224,11 @@ class Portfolio:
             "% Profit".rjust(10, ' '),
             "Net Profit".rjust(12, ' ')
         ]))
-        print("="*80)
+        print("="*77)
 
         for ix, holding in enumerate(self.items):
             price = price_map[holding.sym]
-
-            print(''.join([
-                # ID column
-                str(ix).rjust(3, ' '),
-
-                # Symbol column
-                holding.sym.upper().rjust(8, ' '),
-
-                # Stock counts
-                str(holding.n).rjust(6, ' '),
-
-                # Bought at
-                "${:,.2f}".format(holding.bought_at).rjust(12, ' '),
-
-                # Current price
-                "${:,.2f}".format(price).rjust(12, ' '),
-
-                # Total value
-                "${:,.2f}".format(holding.n * price).rjust(14, ' '),
-
-                # Percentage profit
-                "{:,.3f}%".format((price - holding.bought_at)*holding.n/holding.bought_at).rjust(10, ' '),
-
-                # Net profit
-                "${:,.2f}".format((price - holding.bought_at)*holding.n).rjust(12, ' '),
-            ]))
-
+            holding.print_row(ix, price)
 
     def to_json(self):
         return [item.to_dict() for item in self.items]
@@ -273,3 +248,30 @@ class Holding:
 
     def sell(self, n):
         self.n -= n
+
+    def print_row(self, ix, price):
+        print(''.join([
+            # ID column
+            str(ix).rjust(3, ' '),
+
+            # Symbol column
+            self.sym.upper().rjust(8, ' '),
+
+            # Stock counts
+            str(self.n).rjust(6, ' '),
+
+            # Bought at
+            "${:,.2f}".format(self.bought_at).rjust(12, ' '),
+
+            # Current price
+            "${:,.2f}".format(price).rjust(12, ' '),
+
+            # Total value
+            "${:,.2f}".format(self.n * price).rjust(14, ' '),
+
+            # Percentage profit
+            "{:,.3f}%".format((price - self.bought_at)*self.n/self.bought_at).rjust(10, ' '),
+
+            # Net profit
+            "${:,.2f}".format((price - self.bought_at)*self.n).rjust(12, ' '),
+        ]))
