@@ -251,27 +251,16 @@ class Holding:
 
     def print_row(self, ix, price):
         print(''.join([
-            # ID column
-            str(ix).rjust(3, ' '),
-
-            # Symbol column
-            self.sym.upper().rjust(8, ' '),
-
-            # Stock counts
-            str(self.n).rjust(6, ' '),
-
-            # Bought at
-            "${:,.2f}".format(self.bought_at).rjust(12, ' '),
-
-            # Current price
-            "${:,.2f}".format(price).rjust(12, ' '),
-
-            # Total value
-            "${:,.2f}".format(self.n * price).rjust(14, ' '),
-
-            # Percentage profit
-            "{:,.3f}%".format((price - self.bought_at)*self.n/self.bought_at).rjust(10, ' '),
-
-            # Net profit
-            "${:,.2f}".format((price - self.bought_at)*self.n).rjust(12, ' '),
+            str(ix).rjust(3, ' '),                               # ID
+            self.sym.upper().rjust(8, ' '),                      # Symbol
+            str(self.n).rjust(6, ' '),                           # N stock
+            "${:,.2f}".format(self.bought_at).rjust(12, ' '),    # Bought at
+            "${:,.2f}".format(price).rjust(12, ' '),             # Curr price
+            "${:,.2f}".format(self.n * price).rjust(14, ' '),    # Tot. value
+            "{:,.3f}%".format(                                   # % Profit
+                (price - self.bought_at)*self.n / self.bought_at
+            ).rjust(10, ' '),
+            "${:,.2f}".format(                                   # $ Profit
+                (price - self.bought_at)*self.n
+            ).rjust(12, ' '),
         ]))
