@@ -24,6 +24,13 @@ def get_many_prices(syms):
 
     return {sym.upper() : df.Close[sym.upper()].dropna()[-1] for sym in syms.split()}
 
+def color_picker(col):
+    prefix = {
+        "green": "\x1b[1;32;40m",
+        "red": "\x1b[1;31;40m"
+    }[col]
+    return lambda s: prefix + s + "\x1b[0m"
+
 class Game:
     def __init__(self, mcl_path):
 
@@ -139,18 +146,26 @@ class Game:
         self.df["total_holding"] = self.df.n*self.df.price
         self.df["pct_profit"] = round((self.df.price - self.df.bought_at) / self.df.bought_at, 3)
         self.df["net_profit"] = self.df.n*(self.df.price - self.df.bought_at)
-        print(self.df)
+
+        self.portfolio.print_table(prices)
 
         total_assets = self.data.cash + self.df.total_holding.sum()
         total_profit = total_assets - self.data.init_cash
 
-        print()
-        print("CASH REMAINING: ${:,.2f}".format(self.data.cash))
-        print("TOTAL FEES PAID: ${:,.2f}".format(self.data.total_fee))
-        print("TOTAL TAX PAID: ${:,.2f}".format(self.data.total_tax))
+        color = color_picker("green" if total_profit >= 0 else "red")
 
-        print("TOTAL ASSETS: ${:,.2f}".format(total_assets))
-        print("TOTAL PROFIT: ${:,.2f}".format(total_profit))
+        print()
+        print("CASH REMAINING:  $  {:,.2f}".format(self.data.cash))
+        print("TOTAL FEES PAID: $     {:,.2f}".format(self.data.total_fee))
+        print("TOTAL TAX PAID:  $     {:,.2f}".format(self.data.total_tax))
+
+        print()
+        print("TOTAL ASSETS:".ljust(17, ' ') +
+              color("$ {:,.2f}".format(total_assets)))
+        print("TOTAL PROFIT:".ljust(17, ' ') + 
+              color("$    {:,.2f}".format(total_profit)))
+        print("PERCENT PROFIT:".ljust(17, ' ') +
+              color("{:,.2f}%".format(100*(total_profit / self.data.init_cash))))
         print()
 
     def write(self):
@@ -209,6 +224,25 @@ class Portfolio:
     def append(self, holding):
         self.items.append(holding)
 
+    def print_table(self, price_map):
+        # Headers
+        print()
+        print(''.join([
+            "ID".rjust(3, ' '),
+            "Symbol".rjust(8, ' '),
+            "N".rjust(6, ' '),
+            "Bought At".rjust(12, ' '),
+            "Price".rjust(12, ' '),
+            "Tot. Value".rjust(14, ' '),
+            "% Profit".rjust(10, ' '),
+            "Net Profit".rjust(12, ' ')
+        ]))
+        print("="*77)
+
+        for ix, holding in enumerate(self.items):
+            price = price_map[holding.sym]
+            holding.print_row(ix, price)
+
     def to_json(self):
         return [item.to_dict() for item in self.items]
 
@@ -227,3 +261,45 @@ class Holding:
 
     def sell(self, n):
         self.n -= n
+
+    def print_row(self, ix, price):
+        # ID
+        id_col = str(ix).rjust(3, ' ')
+
+        # Symbol
+        sym_col = self.sym.upper().rjust(8, ' ')
+
+        # N stock
+        n_col = str(self.n).rjust(6, ' ')
+
+        # Bought at
+        bought_at_col = "${:,.2f}".format(self.bought_at).rjust(12, ' ')
+
+        # Current price
+        curr_price_col = "${:,.2f}".format(price).rjust(12, ' ')
+
+        # Total value
+        tot_val_col = "${:,.2f}".format(self.n * price).rjust(14, ' ')
+
+        # % Profit
+        pct_profit_col = "{:,.3f}%".format(
+            (price - self.bought_at)*self.n / self.bought_at
+        ).rjust(10, ' ')
+
+        # $ Profit
+        dollar_profit_col = "${:,.2f}".format(
+            (price - self.bought_at)*self.n
+        ).rjust(12, ' ')
+
+
+        color = color_picker("green" if price >= self.bought_at else "red")
+        print(''.join([
+            id_col,
+            sym_col,
+            n_col,
+            bought_at_col,
+            curr_price_col,
+            tot_val_col,
+            color(pct_profit_col),
+            color(dollar_profit_col)
+        ]))
