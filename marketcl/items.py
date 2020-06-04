@@ -165,7 +165,7 @@ class Game:
         print("TOTAL PROFIT:".ljust(17, ' ') + 
               color("$    {:,.2f}".format(total_profit)))
         print("PERCENT PROFIT:".ljust(17, ' ') +
-              color("{:,.2f}%".format(total_profit / self.data.init_cash)))
+              color("{:,.2f}%".format(100*(total_profit / self.data.init_cash))))
         print()
 
     def write(self):
@@ -263,18 +263,43 @@ class Holding:
         self.n -= n
 
     def print_row(self, ix, price):
+        # ID
+        id_col = str(ix).rjust(3, ' ')
+
+        # Symbol
+        sym_col = self.sym.upper().rjust(8, ' ')
+
+        # N stock
+        n_col = str(self.n).rjust(6, ' ')
+
+        # Bought at
+        bought_at_col = "${:,.2f}".format(self.bought_at).rjust(12, ' ')
+
+        # Current price
+        curr_price_col = "${:,.2f}".format(price).rjust(12, ' ')
+
+        # Total value
+        tot_val_col = "${:,.2f}".format(self.n * price).rjust(14, ' ')
+
+        # % Profit
+        pct_profit_col = "{:,.3f}%".format(
+            (price - self.bought_at)*self.n / self.bought_at
+        ).rjust(10, ' ')
+
+        # $ Profit
+        dollar_profit_col = "${:,.2f}".format(
+            (price - self.bought_at)*self.n
+        ).rjust(12, ' ')
+
+
         color = color_picker("green" if price >= self.bought_at else "red")
-        print(color(''.join([
-            str(ix).rjust(3, ' '),                               # ID
-            self.sym.upper().rjust(8, ' '),                      # Symbol
-            str(self.n).rjust(6, ' '),                           # N stock
-            "${:,.2f}".format(self.bought_at).rjust(12, ' '),    # Bought at
-            "${:,.2f}".format(price).rjust(12, ' '),             # Curr price
-            "${:,.2f}".format(self.n * price).rjust(14, ' '),    # Tot. value
-            "{:,.3f}%".format(                                   # % Profit
-                (price - self.bought_at)*self.n / self.bought_at
-            ).rjust(10, ' '),
-            "${:,.2f}".format(                                   # $ Profit
-                (price - self.bought_at)*self.n
-            ).rjust(12, ' '),
-        ])))
+        print(''.join([
+            id_col,
+            sym_col,
+            n_col,
+            bought_at_col,
+            curr_price_col,
+            tot_val_col,
+            color(pct_profit_col),
+            color(dollar_profit_col)
+        ]))
