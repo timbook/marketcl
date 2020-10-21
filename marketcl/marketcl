@@ -4,10 +4,8 @@ import os
 import sys
 import json
 
-from startup import startup_check, make_game
-from gameparse import parse_game_arg
-
-from items import Game
+from marketcl.dialogues import startup_check, make_game, parse_game_arg
+from marketcl.items import Game
 
 MARKETCL_PATH = os.path.expandvars("$HOME/.marketcl")
 

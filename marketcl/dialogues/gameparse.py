@@ -2,7 +2,7 @@ import os
 import re
 import sys
 import json
-from startup import make_game
+from .startup import make_game
 
 def list_games(mcl_path, return_names=False):
     game_names = [re.sub("(game-|\.json)", "", file)
@@ -49,10 +49,10 @@ def rm_game(mcl_path):
 
 def parse_game_arg(opt, mcl_path):
     game_dispatch = {
-        "new":    make_game,
-        "ls":     list_games,
+        "new": make_game,
+        "ls": list_games,
         "switch": switch_game,
-        "rm":    rm_game
+        "rm": rm_game
     }
 
     game_dispatch[opt](mcl_path)

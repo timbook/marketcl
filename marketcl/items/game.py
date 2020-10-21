@@ -2,34 +2,11 @@ import os
 import sys
 import json
 
-import pandas as pd
 import yfinance as yf
+import pandas as pd
 
-def get_one_price(sym):
-    df = yf.download(
-        tickers=sym,
-        period="5d",
-        interval="1m",
-        progress=False
-    )
-    return round(df.Close.dropna()[-1], 2)
-
-def get_many_prices(syms):
-    df = yf.download(
-        tickers=syms,
-        period="5d",
-        interval="1m",
-        progress=False
-    )
-
-    return {sym.upper() : df.Close[sym.upper()].dropna()[-1] for sym in syms.split()}
-
-def color_picker(col):
-    prefix = {
-        "green": "\x1b[1;32;40m",
-        "red": "\x1b[1;31;40m"
-    }[col]
-    return lambda s: prefix + s + "\x1b[0m"
+from .items import Portfolio, Holding
+from .utils import get_one_price, get_many_prices, color_picker
 
 class Game:
     def __init__(self, mcl_path):
@@ -210,96 +187,3 @@ class GameData:
             "total_tax": self.total_tax,
             "total_fee": self.total_fee
         }
-
-class Portfolio:
-    def __init__(self, raw_data):
-        self.items = [Holding(**holding) for holding in raw_data]
-
-    def __getitem__(self, i):
-        return self.items[i]
-
-    def pop(self, ix):
-        self.items.pop(ix)
-
-    def append(self, holding):
-        self.items.append(holding)
-
-    def print_table(self, price_map):
-        # Headers
-        print()
-        print(''.join([
-            "ID".rjust(3, ' '),
-            "Symbol".rjust(8, ' '),
-            "N".rjust(6, ' '),
-            "Bought At".rjust(12, ' '),
-            "Price".rjust(12, ' '),
-            "Tot. Value".rjust(14, ' '),
-            "% Profit".rjust(10, ' '),
-            "Net Profit".rjust(12, ' ')
-        ]))
-        print("="*77)
-
-        for ix, holding in enumerate(self.items):
-            price = price_map[holding.sym]
-            holding.print_row(ix, price)
-
-    def to_json(self):
-        return [item.to_dict() for item in self.items]
-
-class Holding:
-    def __init__(self, sym, n, bought_at):
-        self.sym = sym.upper()
-        self.n = n
-        self.bought_at = bought_at
-
-    def to_dict(self):
-        return {
-            "sym": self.sym,
-            "n": self.n,
-            "bought_at": self.bought_at
-        }
-
-    def sell(self, n):
-        self.n -= n
-
-    def print_row(self, ix, price):
-        # ID
-        id_col = str(ix).rjust(3, ' ')
-
-        # Symbol
-        sym_col = self.sym.upper().rjust(8, ' ')
-
-        # N stock
-        n_col = str(self.n).rjust(6, ' ')
-
-        # Bought at
-        bought_at_col = "${:,.2f}".format(self.bought_at).rjust(12, ' ')
-
-        # Current price
-        curr_price_col = "${:,.2f}".format(price).rjust(12, ' ')
-
-        # Total value
-        tot_val_col = "${:,.2f}".format(self.n * price).rjust(14, ' ')
-
-        # % Profit
-        pct_profit_col = "{:,.3f}%".format(
-            (price - self.bought_at)*self.n / self.bought_at
-        ).rjust(10, ' ')
-
-        # $ Profit
-        dollar_profit_col = "${:,.2f}".format(
-            (price - self.bought_at)*self.n
-        ).rjust(12, ' ')
-
-
-        color = color_picker("green" if price >= self.bought_at else "red")
-        print(''.join([
-            id_col,
-            sym_col,
-            n_col,
-            bought_at_col,
-            curr_price_col,
-            tot_val_col,
-            color(pct_profit_col),
-            color(dollar_profit_col)
-        ]))
