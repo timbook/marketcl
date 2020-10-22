@@ -10,8 +10,8 @@ def get_one_price(sym):
     return round(df.Close.dropna()[-1], 2)
 
 def get_many_prices(syms):
-    if len(syms) == 1:
-        return {syms[0].upper(): get_one_price(syms[0])}
+    if isinstance(syms, str):
+        return {syms.upper(): get_one_price(syms)}
     else:
         df = yf.download(tickers=syms, period="5d", interval="1m", progress=False)
         return {sym.upper() : df.Close[sym.upper()].dropna()[-1] for sym in syms.split()}
