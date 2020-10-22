@@ -13,6 +13,7 @@ def main():
             "pandas",
             "numpy",
             "matplotlib",
+            "click",
             "yfinance"
         ],
         packages=(
