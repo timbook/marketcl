@@ -45,7 +45,6 @@ def rm_game(mcl_path):
             os.remove(file_rm)
         else:
             print("Close call! Exiting...\n")
-            sys.exit(0)
 
 def parse_game_arg(opt, mcl_path):
     game_dispatch = {

@@ -4,27 +4,38 @@ import os
 import sys
 import json
 
+import click
+
 from marketcl.dialogues import startup_check, make_game, parse_game_arg
 from marketcl.items import Game
 
 MARKETCL_PATH = os.path.expandvars("$HOME/.marketcl")
 
-def main(args):
-    if args[1] == "game":
-        if len(args) >= 3:
-            parse_game_arg(args[2], MARKETCL_PATH)
-        else:
-            print("Game argument needs another option!")
+@click.command()
+@click.option("--ls", "-l", is_flag=True, help="List holdings")
+@click.option("--buy", "-b", is_flag=True, help="Buy a new stock")
+@click.option("--sell", "-s", is_flag=True, help="Sell stock from your current portfolio")
+@click.option("--game", "-g", "game_choice", type=click.Choice(["new", "ls", "switch", "rm"]),
+              help="Start a new game, list ongoing games, switch games, or delete an existing game")
+def main(ls, buy, sell, game_choice):
+    if game_choice:
+        parse_game_arg(game_choice, MARKETCL_PATH)
+        sys.exit(0)
 
     game = Game(MARKETCL_PATH)
 
-    if args[1] in ["buy", "b"]:
-        game.buy()
-    elif args[1] in ["sell", "s"]:
-        game.sell()
-    elif args[1] in ["list", "ls", "l"]:
+    if ls:
         game.print()
+        sys.exit(0)
+
+    if buy:
+        game.buy()
+        sys.exit(0)
+
+    if sell:
+        game.sell()
+        sys.exit(0)
 
 if __name__ == "__main__":
     startup_check(MARKETCL_PATH)
-    main(sys.argv)
+    main()
