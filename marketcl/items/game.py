@@ -109,7 +109,8 @@ class Game:
         cap_gain_paid = cap_gain*self.data.cap_gains_tax
 
         self.data.add_cash(cash_freed)
-        self.data.pay_tax(n_sell*(row.price - row.bought_at))
+        if row.price > row.bought_at:
+            self.data.pay_tax(n_sell*(row.price - row.bought_at))
         self.data.pay_fee()
 
     def create_df(self):
@@ -117,32 +118,35 @@ class Game:
         self.df.index.name = "ID"
 
     def print(self):
-        syms_full = ' '.join(self.df.sym.unique())
-        prices = get_many_prices(syms_full)
-        self.df["price"] = self.df.sym.map(prices)
-        self.df["total_holding"] = self.df.n*self.df.price
-        self.df["pct_profit"] = round((self.df.price - self.df.bought_at) / self.df.bought_at, 3)
-        self.df["net_profit"] = self.df.n*(self.df.price - self.df.bought_at)
+        if self.df.shape[0] > 0:
+            syms_full = ' '.join(self.df.sym.unique())
+            prices = get_many_prices(syms_full)
+            self.df["price"] = self.df.sym.map(prices)
+            self.df["total_holding"] = self.df.n*self.df.price
+            self.df["pct_profit"] = round((self.df.price - self.df.bought_at) / self.df.bought_at, 3)
+            self.df["net_profit"] = self.df.n*(self.df.price - self.df.bought_at)
+            self.portfolio.print_table(prices)
+            total_holdings = self.df.total_holding.sum()
+        else:
+            print()
+            print("[ Your portfolio is currently empty. Buy some stock to get started! ]")
+            total_holdings = 0
 
-        self.portfolio.print_table(prices)
-
-        total_assets = self.data.cash + self.df.total_holding.sum()
+        total_assets = self.data.cash + total_holdings
         total_profit = total_assets - self.data.init_cash
+        pct_profit = 100*total_profit / self.data.init_cash
 
         color = color_picker("green" if total_profit >= 0 else "red")
 
         print()
-        print("CASH REMAINING:  $  {:,.2f}".format(self.data.cash))
-        print("TOTAL FEES PAID: $     {:,.2f}".format(self.data.total_fee))
-        print("TOTAL TAX PAID:  $     {:,.2f}".format(self.data.total_tax))
+        print("CASH REMAINING:  ${:>10,.2f}".format(self.data.cash))
+        print("TOTAL FEES PAID: ${:>10,.2f}".format(self.data.total_fee))
+        print("TOTAL TAX PAID:  ${:>10,.2f}".format(self.data.total_tax))
 
         print()
-        print("TOTAL ASSETS:".ljust(17, ' ') +
-              color("$ {:,.2f}".format(total_assets)))
-        print("TOTAL PROFIT:".ljust(17, ' ') + 
-              color("$    {:,.2f}".format(total_profit)))
-        print("PERCENT PROFIT:".ljust(17, ' ') +
-              color("{:,.2f}%".format(100*(total_profit / self.data.init_cash))))
+        print("TOTAL ASSETS:".ljust(17, ' ') + color("${:>10,.2f}".format(total_assets)))
+        print("TOTAL PROFIT:".ljust(17, ' ') + color("${:>10,.2f}".format(total_profit)))
+        print("PERCENT PROFIT:".ljust(17, ' ') + color(" {:>10,.2f}%".format(pct_profit)))
         print()
 
     def write(self):

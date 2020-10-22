@@ -71,9 +71,7 @@ class Holding:
         tot_val_col = "${:,.2f}".format(self.n * price).rjust(14, ' ')
 
         # % Profit
-        pct_profit_col = "{:,.3f}%".format(
-            100*(price - self.bought_at) / self.bought_at
-        ).rjust(10, ' ')
+        pct_profit_col = "{:,.2f}%".format(100*(price - self.bought_at) / self.bought_at).rjust(10, ' ')
 
         # $ Profit
         dollar_profit_col = "${:,.2f}".format(
