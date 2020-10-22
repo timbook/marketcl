@@ -12,13 +12,11 @@ from marketcl.items import Game
 MARKETCL_PATH = os.path.expandvars("$HOME/.marketcl")
 
 @click.command()
-@click.option("--ls", "-l", is_flag=True)
-@click.option("--buy", "-b", is_flag=True)
-@click.option("--sell", "-s", is_flag=True)
-@click.option(
-    "--game", "-g", "game_choice",
-    type=click.Choice(["new", "ls", "switch", "rm"])
-)
+@click.option("--ls", "-l", is_flag=True, help="List holdings")
+@click.option("--buy", "-b", is_flag=True, help="Buy a new stock")
+@click.option("--sell", "-s", is_flag=True, help="Sell stock from your current portfolio")
+@click.option("--game", "-g", "game_choice", type=click.Choice(["new", "ls", "switch", "rm"]),
+              help="Start a new game, list ongoing games, switch games, or delete an existing game")
 def main(ls, buy, sell, game_choice):
     if game_choice:
         parse_game_arg(game_choice, MARKETCL_PATH)
