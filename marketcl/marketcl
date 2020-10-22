@@ -20,6 +20,7 @@ MARKETCL_PATH = os.path.expandvars("$HOME/.marketcl")
 def main(ls, buy, sell, game_choice):
     if game_choice:
         parse_game_arg(game_choice, MARKETCL_PATH)
+        sys.exit(0)
 
     game = Game(MARKETCL_PATH)
 
