@@ -10,11 +10,11 @@ def get_one_price(sym):
     return round(df.Close.dropna()[-1], 2)
 
 def get_many_prices(syms):
-    if isinstance(syms, str):
-        return {syms.upper(): get_one_price(syms)}
+    if len(syms) == 1:
+        return {syms[0]: get_one_price(syms[0])}
     else:
         df = yf.download(tickers=syms, period="5d", interval="1m", progress=False)
-        return {sym.upper() : df.Close[sym.upper()].dropna()[-1] for sym in syms.split()}
+        return {sym.upper() : df.Close[sym.upper()].dropna()[-1] for sym in syms}
 
 def color_picker(col):
     prefix = {

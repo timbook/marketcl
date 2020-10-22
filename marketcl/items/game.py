@@ -119,7 +119,7 @@ class Game:
 
     def print(self):
         if self.df.shape[0] > 0:
-            syms_full = ' '.join(self.df.sym.unique())
+            syms_full = self.df.sym.unique().tolist()
             prices = get_many_prices(syms_full)
             self.df["price"] = self.df.sym.map(prices)
             self.df["total_holding"] = self.df.n*self.df.price
