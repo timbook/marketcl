@@ -18,7 +18,7 @@ def get_many_prices(syms):
 
 def color_picker(col):
     prefix = {
-        "green": "\x1b[1;32;40m",
-        "red": "\x1b[1;31;40m"
+        "green": "\u001b[31m",
+        "red": "\u001b[32m"
     }[col]
-    return lambda s: prefix + s + "\x1b[0m"
+    return lambda s: prefix + s + "\u001b[0m"
