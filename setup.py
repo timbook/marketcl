@@ -19,7 +19,8 @@ def main():
         packages=(
             "marketcl",
             "marketcl.items",
-            "marketcl.dialogues"
+            "marketcl.dialogues",
+            "marketcl.plots"
         ),
         scripts=["marketcl/marketcl"]
     )

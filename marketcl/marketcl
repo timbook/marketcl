@@ -8,16 +8,23 @@ import click
 
 from marketcl.dialogues import startup_check, make_game, parse_game_arg
 from marketcl.items import Game
+from marketcl.plots import Plotter
 
 MARKETCL_PATH = os.path.expandvars("$HOME/.marketcl")
+
+game_opts = click.Choice(["new", "ls", "switch", "rm"])
+plot_opts = click.Choice(["macd"])
 
 @click.command()
 @click.option("--ls", "-l", is_flag=True, help="List holdings")
 @click.option("--buy", "-b", is_flag=True, help="Buy a new stock")
 @click.option("--sell", "-s", is_flag=True, help="Sell stock from your current portfolio")
-@click.option("--game", "-g", "game_choice", type=click.Choice(["new", "ls", "switch", "rm"]),
+@click.option("--game", "-g", "game_choice", type=game_opts,
               help="Start a new game, list ongoing games, switch games, or delete an existing game")
-def main(ls, buy, sell, game_choice):
+@click.option("--plot", "-p", "plot_choice", type=plot_opts,
+              help="Plot your choice of market indicators for a given symbol")
+@click.option("--sym", "-m")
+def main(ls, buy, sell, game_choice, plot_choice, sym):
     if game_choice:
         parse_game_arg(game_choice, MARKETCL_PATH)
         sys.exit(0)
@@ -34,6 +41,13 @@ def main(ls, buy, sell, game_choice):
 
     if sell:
         game.sell()
+        sys.exit(0)
+
+    if plot_choice:
+        if not sym:
+            sym = input("What symbol would you like to plot? ")
+        plotter = Plotter(sym)
+        plotter.plot(plot_choice)
         sys.exit(0)
 
 if __name__ == "__main__":
