@@ -8,7 +8,7 @@ import click
 
 from marketcl.dialogues import startup_check, make_game, parse_game_arg
 from marketcl.items import Game
-from marketcl.plots import Plotter
+from marketcl.plots import Plotter, plot_desc
 
 MARKETCL_PATH = os.path.expandvars("$HOME/.marketcl")
 
@@ -23,8 +23,10 @@ plot_opts = click.Choice(["macd"])
               help="Start a new game, list ongoing games, switch games, or delete an existing game")
 @click.option("--plot", "-p", "plot_choice", type=plot_opts,
               help="Plot your choice of market indicators for a given symbol")
+@click.option("--plot-help", "phelp", type=plot_opts,
+              help="Description and advice for plotting the given plot type")
 @click.option("--sym", "-m")
-def main(ls, buy, sell, game_choice, plot_choice, sym):
+def main(ls, buy, sell, game_choice, plot_choice, phelp, sym):
     if game_choice:
         parse_game_arg(game_choice, MARKETCL_PATH)
         sys.exit(0)
@@ -42,6 +44,9 @@ def main(ls, buy, sell, game_choice, plot_choice, sym):
     if sell:
         game.sell()
         sys.exit(0)
+
+    if phelp:
+        plot_desc(phelp)
 
     if plot_choice:
         if not sym:

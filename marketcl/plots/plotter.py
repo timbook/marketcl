@@ -38,11 +38,12 @@ class Plotter:
         self.plot_volume(axs[1][0])
 
         axs[0][1].set_title("MACD", loc="left")
-        axs[0][1].plot(self.data.index, fast_line, color="navy")
-        axs[0][1].plot(self.data.index, slow_line, color="skyblue")
+        axs[0][1].plot(self.data.index, fast_line, color="navy", label="Fast Line")
+        axs[0][1].plot(self.data.index, slow_line, color="skyblue", ls="dashed", label="Slow Line")
 
         axs[1][1].set_title("MACD Histogram", loc="left")
         axs[1][1].vlines(self.data.index, ymin=0, ymax=macd_hist, color=color)
 
+        axs[0][1].legend()
         plt.tight_layout()
         plt.show()
