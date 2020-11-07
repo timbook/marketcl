@@ -13,7 +13,7 @@ from marketcl.plots import Plotter, plot_desc
 MARKETCL_PATH = os.path.expandvars("$HOME/.marketcl")
 
 game_opts = click.Choice(["new", "ls", "switch", "rm"])
-plot_opts = click.Choice(["macd"])
+plot_opts = click.Choice(["macd", "sroc", "wr"])
 
 @click.command()
 @click.option("--ls", "-l", is_flag=True, help="List holdings")
